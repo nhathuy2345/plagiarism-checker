@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Plagiarism Detector Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --card-glass: rgba(255, 255, 255, 0.15);
+            --text-main: #1e293b;
+            --primary: #4f46e5;
+            --danger: #ef4444;
+            --success: #00d289;
+        }
+
+        body { 
+            background: var(--bg-gradient); min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0; padding: 40px 20px; color: white;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        /* Khung nhập liệu chính (Glassmorphism) */
+        .main-card {
+            background: rgba(255, 255, 255, 0.95); width: 100%; max-width: 850px;
+            border-radius: 30px; padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            color: var(--text-main); position: relative;
+        }
+
+        .input-info { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; color: #64748b; font-weight: 500; }
+        
+        textarea {
+            width: 100%; height: 180px; border: 2px solid #f1f5f9; border-radius: 15px;
+            padding: 20px; font-size: 16px; box-sizing: border-box; outline: none;
+            background: #fff; transition: 0.3s;
+        }
+        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+
+        /* Loading Bar */
+        #loadingBarContainer { display: none; margin-top: 20px; }
+        .progress-bg { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; }
+        .progress-fill { background: var(--success); height: 100%; width: 60%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+        .btn-analyze {
+            background: linear-gradient(to right, #4f46e5, #3b82f6);
+            color: white; border: none; padding: 15px 35px; border-radius: 15px;
+            font-size: 18px; font-weight: bold; cursor: pointer;
+            margin-top: 20px; display: flex; align-items: center; gap: 10px;
+            transition: 0.3s; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
+            width: 100%; justify-content: center;
+        }
+        .btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4); }
+
+        /* Grid kết quả */
+        .results-wrapper { 
+            display: none; grid-template-columns: 1fr 1fr; gap: 25px; 
+            margin-top: 40px; width: 100%; max-width: 900px;
+        }
+
+        .result-item {
+            background: #ffffff; border-radius: 25px; padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            position: relative; overflow: hidden; transition: 0.4s ease;
+            color: var(--text-main); display: flex; flex-direction: column; align-items: center;
+        }
+        .result-item:hover { transform: translateY(-10px); }
+
+        .source-card {
+            background: #ffffff; border-radius: 20px; padding: 25px;
+            border-left: 8px solid var(--danger); box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            color: var(--text-main); transition: 0.3s;
+        }
+        .source-card:hover { transform: scale(1.02); }
+
+        .chart-box { position: relative; filter: drop-shadow(0 10px 15px rgba(168, 85, 247, 0.2)); }
+
+        .match-label {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 28px; font-weight: 900;
+            background: linear-gradient(to bottom, #a855f7, #06b6d4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .source-item-title { font-weight: bold; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; }
+        .badge { font-size: 12px; font-weight: bold; padding: 4px 12px; border-radius: 20px; }
+        .source-link { font-size: 13px; color: #3b82f6; text-decoration: none; font-weight: 600; margin-top: 10px; display: inline-block; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <i class="fas fa-fingerprint fa-3x" style="margin-bottom: 10px;"></i>
+    <h1>AI Plagiarism Detector Pro</h1>
+    <p>Hệ thống AI đối soát dữ liệu thời gian thực</p>
+</div>
+
+<div class="main-card">
+    <div class="input-info">
+        <i class="fas fa-check-circle" style="color: var(--success)"></i> 
+        <span>Sẵn sàng quét dữ liệu (Tối thiểu 30 ký tự)</span>
+    </div>
+    <textarea id="textInput" placeholder="Dán nội dung văn bản bạn muốn kiểm tra..."></textarea>
+    
+    <div id="loadingBarContainer">
+        <div class="progress-bg"><div class="progress-fill"></div></div>
+        <p style="font-size: 12px; color: #64748b; margin-top: 8px; font-weight: 600;"># Đang đối chiếu với hàng tỷ website...</p>
+    </div>
+
+    <button class="btn-analyze" id="btnAnalyze" onclick="processAnalysis()">
+        <i class="fas fa-rocket"></i> BẮT ĐẦU PHÂN TÍCH
+    </button>
+</div>
+
+<div id="resultsGrid" class="results-wrapper"></div>
+
+<script>
+    let chartInstance = null;
+
+    async function processAnalysis() {
+        const text = document.getElementById("textInput").value;
+        if(text.length < 30) return alert("Vui lòng nhập thêm văn bản!");
+
+        document.getElementById("loadingBarContainer").style.display = "block";
+        document.getElementById("btnAnalyze").disabled = true;
+
+        try {
+            const res = await fetch("/check", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+            renderResults(data);
+        } catch (e) {
+            alert("Lỗi server! Đảm bảo bạn đã chạy 'node server.js'");
+        } finally {
+            document.getElementById("loadingBarContainer").style.display = "none";
+            document.getElementById("btnAnalyze").disabled = false;
+        }
+    }
+
+    function renderResults(data) {
+        const grid = document.getElementById("resultsGrid");
+        grid.style.display = "grid";
+        grid.innerHTML = "";
+
+        const isSafe = data.plagiarism < 15;
+        const statusColor = isSafe ? '#10b981' : '#ef4444';
+
+        // 1. Thẻ Biểu đồ Tổng
+        grid.innerHTML += `
+            <div class="result-item">
+                <div style="width:100%; display:flex; justify-content:space-between; margin-bottom:15px">
+                    <span style="font-weight:bold">TỔNG QUÁT</span>
+                    <span style="color:${statusColor}; font-weight:bold;">${isSafe ? 'AN TOÀN' : 'CẢNH BÁO'}</span>
+                </div>
+                <div class="chart-box" style="width:180px; height:180px;">
+                    <canvas id="chart-main"></canvas>
+                    <div class="match-label">${data.plagiarism}%</div>
+                </div>
+            </div>
+        `;
+
+        // 2. Thẻ các nguồn
+        data.sources.forEach((s, index) => {
+            grid.innerHTML += `
+                <div class="source-card" style="animation: fadeInUp ${0.3 + index*0.2}s ease forwards; border-left-color: ${statusColor}">
+                    <div class="source-item-title">
+                        <span>NGUỒN #${index + 1}</span>
+                        <span class="badge" style="background:${isSafe ? '#d1fae5' : '#fee2e2'}; color:${statusColor}">
+                            ${Math.round(s.score * 100)}% MATCH
+                        </span>
+                    </div>
+                    <p style="color:#475569; font-size:14px; margin:15px 0; line-height:1.6; font-style:italic;">
+                        "...${s.sentence}..."
+                    </p>
+                    <a href="${s.link}" target="_blank" class="source-link">
+                        Xác minh nguồn gốc <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            `;
+        });
+
+        setTimeout(() => createChart('chart-main', data.plagiarism), 100);
+    }
+
+    function createChart(id, percent) {
+        const ctx = document.getElementById(id).getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+        gradient.addColorStop(0, '#a855f7');
+        gradient.addColorStop(1, '#00d289');
+
+        if(chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [percent, 100 - percent],
+                    backgroundColor: [gradient, '#f1f5f9'],
+                    borderWidth: 0,
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                cutout: '82%',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                animation: { duration: 1500, easing: 'easeOutQuart' }
+            }
+        });
+    }
+</script>
+</body>
+</html>
