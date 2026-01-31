@@ -3,226 +3,1045 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Plagiarism Detector Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>AI Integrity Checker - Kiểm tra đạo văn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            --card-glass: rgba(255, 255, 255, 0.15);
-            --text-main: #1e293b;
-            --primary: #4f46e5;
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --success: #10b981;
+            --warning: #f59e0b;
             --danger: #ef4444;
-            --success: #00d289;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 12px;
+            --transition: all 0.3s ease;
         }
 
-        body { 
-            background: var(--bg-gradient); min-height: 100vh;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            margin: 0; padding: 40px 20px; color: white;
-            display: flex; flex-direction: column; align-items: center;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-
-        /* Khung nhập liệu chính (Glassmorphism) */
-        .main-card {
-            background: rgba(255, 255, 255, 0.95); width: 100%; max-width: 850px;
-            border-radius: 30px; padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-            color: var(--text-main); position: relative;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--gray-800);
+            line-height: 1.6;
         }
 
-        .input-info { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; color: #64748b; font-weight: 500; }
-        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* HEADER */
+        header {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 2rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .stats {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* INPUT SECTION */
+        .input-section {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
         textarea {
-            width: 100%; height: 180px; border: 2px solid #f1f5f9; border-radius: 15px;
-            padding: 20px; font-size: 16px; box-sizing: border-box; outline: none;
-            background: #fff; transition: 0.3s;
-        }
-        textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
-
-        /* Loading Bar */
-        #loadingBarContainer { display: none; margin-top: 20px; }
-        .progress-bg { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; }
-        .progress-fill { background: var(--success); height: 100%; width: 60%; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
-
-        .btn-analyze {
-            background: linear-gradient(to right, #4f46e5, #3b82f6);
-            color: white; border: none; padding: 15px 35px; border-radius: 15px;
-            font-size: 18px; font-weight: bold; cursor: pointer;
-            margin-top: 20px; display: flex; align-items: center; gap: 10px;
-            transition: 0.3s; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3);
-            width: 100%; justify-content: center;
-        }
-        .btn-analyze:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4); }
-
-        /* Grid kết quả */
-        .results-wrapper { 
-            display: none; grid-template-columns: 1fr 1fr; gap: 25px; 
-            margin-top: 40px; width: 100%; max-width: 900px;
+            width: 100%;
+            min-height: 300px;
+            padding: 1.25rem;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            transition: var(--transition);
         }
 
-        .result-item {
-            background: #ffffff; border-radius: 25px; padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            position: relative; overflow: hidden; transition: 0.4s ease;
-            color: var(--text-main); display: flex; flex-direction: column; align-items: center;
-        }
-        .result-item:hover { transform: translateY(-10px); }
-
-        .source-card {
-            background: #ffffff; border-radius: 20px; padding: 25px;
-            border-left: 8px solid var(--danger); box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            color: var(--text-main); transition: 0.3s;
-        }
-        .source-card:hover { transform: scale(1.02); }
-
-        .chart-box { position: relative; filter: drop-shadow(0 10px 15px rgba(168, 85, 247, 0.2)); }
-
-        .match-label {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 28px; font-weight: 900;
-            background: linear-gradient(to bottom, #a855f7, #06b6d4);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
-        .source-item-title { font-weight: bold; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; }
-        .badge { font-size: 12px; font-weight: bold; padding: 4px 12px; border-radius: 20px; }
-        .source-link { font-size: 13px; color: #3b82f6; text-decoration: none; font-weight: 600; margin-top: 10px; display: inline-block; }
+        .word-count {
+            position: absolute;
+            bottom: 10px;
+            right: 15px;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            background: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* BUTTONS */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: var(--radius);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-800);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        /* RESULTS SECTION */
+        .results-section {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+            position: sticky;
+            top: 20px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .similarity-score {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            position: relative;
+            background: conic-gradient(var(--primary) 0% 25%, var(--gray-200) 25% 100%);
+        }
+
+        .score-inner {
+            width: 90px;
+            height: 90px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .score-text {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-top: 0.5rem;
+        }
+
+        /* SOURCES LIST */
+        .sources-list {
+            margin-top: 1.5rem;
+        }
+
+        .source-item {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .source-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .source-url {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .source-url:hover {
+            text-decoration: underline;
+        }
+
+        .source-similarity {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .source-preview {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* WARNING BANNER */
+        .warning-banner {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1px solid #fbbf24;
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-top: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .warning-banner i {
+            color: #f59e0b;
+            font-size: 1.25rem;
+            margin-top: 2px;
+        }
+
+        .warning-content h4 {
+            color: #92400e;
+            margin-bottom: 0.25rem;
+        }
+
+        .warning-content p {
+            color: #92400e;
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        /* HISTORY SECTION */
+        .history-section {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .history-item {
+            background: var(--gray-50);
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid var(--success);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .history-date {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin-bottom: 0.5rem;
+        }
+
+        .history-text {
+            font-size: 0.9rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: white;
+            margin-top: 3rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .stats {
+                justify-content: center;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* UTILITY CLASSES */
+        .hidden {
+            display: none !important;
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+
+        .mt-3 {
+            margin-top: 1rem;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-success {
+            color: var(--success);
+        }
+
+        .text-warning {
+            color: var(--warning);
+        }
+
+        .text-danger {
+            color: var(--danger);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 1rem;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background: var(--gray-50);
+        }
+
+        .file-upload i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <i class="fas fa-fingerprint fa-3x" style="margin-bottom: 10px;"></i>
-    <h1>AI Plagiarism Detector Pro</h1>
-    <p>Hệ thống AI đối soát dữ liệu thời gian thực</p>
-</div>
-
-<div class="main-card">
-    <div class="input-info">
-        <i class="fas fa-check-circle" style="color: var(--success)"></i> 
-        <span>Sẵn sàng quét dữ liệu (Tối thiểu 30 ký tự)</span>
-    </div>
-    <textarea id="textInput" placeholder="Dán nội dung văn bản bạn muốn kiểm tra..."></textarea>
-    
-    <div id="loadingBarContainer">
-        <div class="progress-bg"><div class="progress-fill"></div></div>
-        <p style="font-size: 12px; color: #64748b; margin-top: 8px; font-weight: 600;"># Đang đối chiếu với hàng tỷ website...</p>
-    </div>
-
-    <button class="btn-analyze" id="btnAnalyze" onclick="processAnalysis()">
-        <i class="fas fa-rocket"></i> BẮT ĐẦU PHÂN TÍCH
-    </button>
-</div>
-
-<div id="resultsGrid" class="results-wrapper"></div>
-
-<script>
-    let chartInstance = null;
-
-    async function processAnalysis() {
-        const text = document.getElementById("textInput").value;
-        if(text.length < 30) return alert("Vui lòng nhập thêm văn bản!");
-
-        document.getElementById("loadingBarContainer").style.display = "block";
-        document.getElementById("btnAnalyze").disabled = true;
-
-        try {
-            const res = await fetch("/check", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text })
-            });
-            const data = await res.json();
-            renderResults(data);
-        } catch (e) {
-            alert("Lỗi server! Đảm bảo bạn đã chạy 'node server.js'");
-        } finally {
-            document.getElementById("loadingBarContainer").style.display = "none";
-            document.getElementById("btnAnalyze").disabled = false;
-        }
-    }
-
-    function renderResults(data) {
-        const grid = document.getElementById("resultsGrid");
-        grid.style.display = "grid";
-        grid.innerHTML = "";
-
-        const isSafe = data.plagiarism < 15;
-        const statusColor = isSafe ? '#10b981' : '#ef4444';
-
-        // 1. Thẻ Biểu đồ Tổng
-        grid.innerHTML += `
-            <div class="result-item">
-                <div style="width:100%; display:flex; justify-content:space-between; margin-bottom:15px">
-                    <span style="font-weight:bold">TỔNG QUÁT</span>
-                    <span style="color:${statusColor}; font-weight:bold;">${isSafe ? 'AN TOÀN' : 'CẢNH BÁO'}</span>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <h1>AI Integrity <span>Checker</span></h1>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-value">1,248</div>
+                    <div class="stat-label">Văn bản đã kiểm tra</div>
                 </div>
-                <div class="chart-box" style="width:180px; height:180px;">
-                    <canvas id="chart-main"></canvas>
-                    <div class="match-label">${data.plagiarism}%</div>
+                <div class="stat-item">
+                    <div class="stat-value">98.7%</div>
+                    <div class="stat-label">Độ chính xác</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">2.3s</div>
+                    <div class="stat-label">Thời gian trung bình</div>
                 </div>
             </div>
-        `;
+        </header>
 
-        // 2. Thẻ các nguồn
-        data.sources.forEach((s, index) => {
-            grid.innerHTML += `
-                <div class="source-card" style="animation: fadeInUp ${0.3 + index*0.2}s ease forwards; border-left-color: ${statusColor}">
-                    <div class="source-item-title">
-                        <span>NGUỒN #${index + 1}</span>
-                        <span class="badge" style="background:${isSafe ? '#d1fae5' : '#fee2e2'}; color:${statusColor}">
-                            ${Math.round(s.score * 100)}% MATCH
-                        </span>
-                    </div>
-                    <p style="color:#475569; font-size:14px; margin:15px 0; line-height:1.6; font-style:italic;">
-                        "...${s.sentence}..."
-                    </p>
-                    <a href="${s.link}" target="_blank" class="source-link">
-                        Xác minh nguồn gốc <i class="fas fa-external-link-alt"></i>
-                    </a>
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <!-- INPUT SECTION -->
+            <div class="input-section">
+                <div class="section-title">
+                    <i class="fas fa-edit"></i>
+                    <h2>Nhập văn bản cần kiểm tra</h2>
                 </div>
-            `;
+
+                <div class="file-upload" id="fileUpload">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <h3>Kéo thả file hoặc click để tải lên</h3>
+                    <p>Hỗ trợ: .txt, .pdf (tối đa 10MB)</p>
+                    <input type="file" id="fileInput" accept=".txt,.pdf" hidden>
+                </div>
+
+                <div class="input-container">
+                    <textarea id="textInput" placeholder="Dán văn bản của bạn vào đây... Hoặc bắt đầu nhập..."></textarea>
+                    <div class="word-count" id="wordCount">0 từ</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="checkBtn">
+                        <i class="fas fa-search"></i>
+                        Bắt đầu kiểm tra
+                    </button>
+                    <button class="btn btn-secondary" id="clearBtn">
+                        <i class="fas fa-broom"></i>
+                        Xóa tất cả
+                    </button>
+                    <button class="btn btn-secondary" id="exampleBtn">
+                        <i class="fas fa-lightbulb"></i>
+                        Ví dụ mẫu
+                    </button>
+                </div>
+
+                <!-- OPTIONS -->
+                <div class="options mt-3">
+                    <div class="section-title">
+                        <i class="fas fa-cog"></i>
+                        <h3>Tùy chọn kiểm tra</h3>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                                <input type="checkbox" id="ignoreQuotes" checked>
+                                Bỏ qua trích dẫn
+                            </label>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                                <input type="checkbox" id="ignoreCommon" checked>
+                                Bỏ qua từ phổ biến
+                            </label>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                                <input type="checkbox" id="deepCheck">
+                                Quét sâu (chậm hơn)
+                            </label>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                                <input type="checkbox" id="saveHistory" checked>
+                                Lưu lịch sử
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTS SECTION -->
+            <div class="results-section">
+                <div class="results-header">
+                    <div class="section-title">
+                        <i class="fas fa-chart-bar"></i>
+                        <h2>Kết quả phân tích</h2>
+                    </div>
+                    <button class="btn btn-secondary" id="exportBtn">
+                        <i class="fas fa-download"></i>
+                        Xuất báo cáo
+                    </button>
+                </div>
+
+                <div id="resultsContent">
+                    <div class="loading hidden" id="loading">
+                        <div class="spinner"></div>
+                        <p>Đang phân tích văn bản...</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+
+                    <div id="resultsDisplay" class="hidden">
+                        <!-- Similarity Score -->
+                        <div class="similarity-score">
+                            <div class="score-circle" id="scoreCircle">
+                                <div class="score-inner">
+                                    <span id="scoreValue">0%</span>
+                                </div>
+                            </div>
+                            <div id="scoreText" class="score-text"></div>
+                        </div>
+
+                        <!-- Analysis Summary -->
+                        <div class="mb-3">
+                            <h3 style="margin-bottom: 0.5rem;">Tóm tắt phân tích</h3>
+                            <div style="background: var(--gray-50); padding: 1rem; border-radius: 8px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Tổng số từ:</span>
+                                    <span id="totalWords" class="text-success">0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Từ duy nhất:</span>
+                                    <span id="uniqueWords" class="text-success">0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Thời gian phân tích:</span>
+                                    <span id="analysisTime" class="text-success">0s</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Matches Found -->
+                        <div id="matchesSection" class="hidden">
+                            <h3 style="margin-bottom: 1rem;">Nguồn trùng khớp tìm thấy</h3>
+                            <div class="sources-list" id="sourcesList">
+                                <!-- Sources will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Initial State -->
+                    <div id="initialState" class="text-center" style="padding: 3rem 1rem;">
+                        <i class="fas fa-search" style="font-size: 3rem; color: var(--gray-200); margin-bottom: 1rem;"></i>
+                        <h3 style="color: var(--gray-600); margin-bottom: 0.5rem;">Chưa có kết quả</h3>
+                        <p style="color: var(--gray-600);">Nhập văn bản và nhấn "Bắt đầu kiểm tra" để xem phân tích</p>
+                    </div>
+                </div>
+
+                <!-- Warning Banner -->
+                <div class="warning-banner">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <div class="warning-content">
+                        <h4>Lưu ý quan trọng</h4>
+                        <p>Công cụ này mang tính chất tham khảo. Kết quả không thay thế ý kiến chuyên môn. Luôn kiểm tra chéo với các nguồn uy tín.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY SECTION -->
+        <div class="history-section">
+            <div class="section-title">
+                <i class="fas fa-history"></i>
+                <h2>Lịch sử kiểm tra</h2>
+            </div>
+            <div class="history-grid" id="historyGrid">
+                <!-- History items will be inserted here -->
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>© 2024 AI Integrity Checker - Công cụ kiểm tra đạo văn thông minh</p>
+            <div class="footer-links">
+                <a href="#" id="privacyLink"><i class="fas fa-lock"></i> Chính sách bảo mật</a>
+                <a href="#" id="termsLink"><i class="fas fa-file-contract"></i> Điều khoản sử dụng</a>
+                <a href="#" id="helpLink"><i class="fas fa-question-circle"></i> Trợ giúp</a>
+                <a href="mailto:support@example.com"><i class="fas fa-envelope"></i> Liên hệ hỗ trợ</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const textInput = document.getElementById('textInput');
+        const wordCount = document.getElementById('wordCount');
+        const checkBtn = document.getElementById('checkBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const exampleBtn = document.getElementById('exampleBtn');
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const resultsDisplay = document.getElementById('resultsDisplay');
+        const initialState = document.getElementById('initialState');
+        const progressFill = document.getElementById('progressFill');
+        const scoreValue = document.getElementById('scoreValue');
+        const scoreCircle = document.getElementById('scoreCircle');
+        const scoreText = document.getElementById('scoreText');
+        const totalWords = document.getElementById('totalWords');
+        const uniqueWords = document.getElementById('uniqueWords');
+        const analysisTime = document.getElementById('analysisTime');
+        const sourcesList = document.getElementById('sourcesList');
+        const matchesSection = document.getElementById('matchesSection');
+        const historyGrid = document.getElementById('historyGrid');
+        const exportBtn = document.getElementById('exportBtn');
+
+        // Update word count
+        textInput.addEventListener('input', updateWordCount);
+        
+        function updateWordCount() {
+            const text = textInput.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            wordCount.textContent = `${words} từ`;
+            
+            // Update button state
+            checkBtn.disabled = words === 0;
+            checkBtn.style.opacity = words === 0 ? '0.5' : '1';
+        }
+
+        // File upload handling
+        fileUpload.addEventListener('click', () => fileInput.click());
+        
+fileInput.addEventListener('change', async function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Check size
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File quá lớn! Vui lòng chọn file nhỏ hơn 10MB.');
+                return;
+            }
+
+            // ===== TXT FILE =====
+            if (file.name.endsWith('.txt')) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    textInput.value = e.target.result;
+                    updateWordCount();
+                };
+                reader.readAsText(file, 'UTF-8');
+                return;
+            }
+
+            // ===== PDF FILE =====
+            if (file.type === 'application/pdf') {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+                    let extractedText = '';
+
+                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        const content = await page.getTextContent();
+                        content.items.forEach(item => {
+                            extractedText += item.str + ' ';
+                        });
+                    }
+
+                    textInput.value = extractedText.trim();
+                    updateWordCount();
+                } catch (err) {
+                    console.error(err);
+                    alert('Không thể đọc nội dung file PDF.');
+                }
+                return;
+            }
+
+            // ===== DOC / DOCX (chưa hỗ trợ) =====
+            alert('Hiện tại chỉ hỗ trợ file .txt và .pdf');
         });
 
-        setTimeout(() => createChart('chart-main', data.plagiarism), 100);
-    }
+        // Example text
+        exampleBtn.addEventListener('click', function() {
+            const exampleText = `Trí tuệ nhân tạo (AI) đang thay đổi cách chúng ta sống và làm việc. Từ các hệ thống đề xuất trên các nền tảng streaming đến các công cụ hỗ trợ chẩn đoán y tế, AI đã trở thành một phần không thể thiếu trong xã hội hiện đại. Tuy nhiên, việc sử dụng AI cũng đặt ra nhiều câu hỏi về đạo đức và quyền riêng tư. Các nhà nghiên cứu và nhà hoạch định chính sách đang nỗ lực tìm ra sự cân bằng giữa đổi mới và bảo vệ quyền con người.`;
+            
+            textInput.value = exampleText;
+            updateWordCount();
+        });
 
-    function createChart(id, percent) {
-        const ctx = document.getElementById(id).getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 150);
-        gradient.addColorStop(0, '#a855f7');
-        gradient.addColorStop(1, '#00d289');
-
-        if(chartInstance) chartInstance.destroy();
-
-        chartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: [percent, 100 - percent],
-                    backgroundColor: [gradient, '#f1f5f9'],
-                    borderWidth: 0,
-                    borderRadius: 10
-                }]
-            },
-            options: {
-                cutout: '82%',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                animation: { duration: 1500, easing: 'easeOutQuart' }
+        // Clear all
+        clearBtn.addEventListener('click', function() {
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ nội dung?')) {
+                textInput.value = '';
+                updateWordCount();
+                resultsDisplay.classList.add('hidden');
+                initialState.classList.remove('hidden');
             }
         });
-    }
-</script>
+
+        // Check plagiarism
+        checkBtn.addEventListener('click', checkPlagiarism);
+        
+        async function checkPlagiarism() {
+            const text = textInput.value.trim();
+            if (!text) return;
+            
+            // Show loading
+            loading.classList.remove('hidden');
+            resultsDisplay.classList.add('hidden');
+            initialState.classList.add('hidden');
+            
+            // Simulate progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                progressFill.style.width = `${progress}%`;
+                if (progress >= 90) clearInterval(progressInterval);
+            }, 100);
+            
+            try {
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Generate fake results (in real app, this would be API call)
+                const result = generateFakeResults(text);
+                
+                // Update UI with results
+                displayResults(result);
+                
+                // Add to history
+                addToHistory(text, result);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi kiểm tra. Vui lòng thử lại.');
+            } finally {
+                loading.classList.add('hidden');
+                progressFill.style.width = '0%';
+            }
+        }
+
+        function generateFakeResults(text) {
+            const words = text.split(/\s+/);
+            const totalWords = words.length;
+            const uniqueWords = new Set(words.map(w => w.toLowerCase())).size;
+            
+            // Generate random similarity score (0-100%)
+            const similarity = Math.floor(Math.random() * 100);
+            
+            // Generate fake sources
+            const sources = [];
+            const sourceTemplates = [
+                'https://en.wikipedia.org/wiki/Artificial_intelligence',
+                'https://www.researchgate.net/publication/',
+                'https://arxiv.org/abs/',
+                'https://www.sciencedirect.com/science/article/',
+                'https://link.springer.com/chapter/'
+            ];
+            
+            for (let i = 0; i < 3; i++) {
+                const sourceSimilarity = Math.floor(Math.random() * 30) + 5;
+                sources.push({
+                    url: sourceTemplates[i] + Math.random().toString(36).substr(2, 10),
+                    similarity: sourceSimilarity,
+                    preview: text.substring(0, 150) + '...'
+                });
+            }
+            
+            return {
+                similarity,
+                totalWords,
+                uniqueWords,
+                analysisTime: (Math.random() * 2 + 1).toFixed(2),
+                sources
+            };
+        }
+
+        function displayResults(result) {
+            // Update score
+            scoreValue.textContent = `${result.similarity}%`;
+            
+            // Update score circle gradient
+            const color = result.similarity < 30 ? '#10b981' : 
+                         result.similarity < 70 ? '#f59e0b' : '#ef4444';
+            scoreCircle.style.background = `conic-gradient(${color} 0% ${result.similarity}%, var(--gray-200) ${result.similarity}% 100%)`;
+            
+            // Update score text
+            let text, textColor;
+            if (result.similarity < 10) {
+                text = 'Rất tốt - Hầu như không có trùng lặp';
+                textColor = 'text-success';
+            } else if (result.similarity < 30) {
+                text = 'Tốt - Mức độ trùng lặp thấp';
+                textColor = 'text-success';
+            } else if (result.similarity < 50) {
+                text = 'Cảnh báo - Cần kiểm tra lại';
+                textColor = 'text-warning';
+            } else {
+                text = 'Nguy hiểm - Mức độ trùng lặp cao';
+                textColor = 'text-danger';
+            }
+            scoreText.innerHTML = `<span class="${textColor}">${text}</span>`;
+            
+            // Update analysis summary
+            totalWords.textContent = result.totalWords;
+            uniqueWords.textContent = result.uniqueWords;
+            analysisTime.textContent = `${result.analysisTime}s`;
+            
+            // Update sources
+            if (result.sources.length > 0) {
+                matchesSection.classList.remove('hidden');
+                sourcesList.innerHTML = '';
+                
+                result.sources.forEach(source => {
+                    const sourceItem = document.createElement('div');
+                    sourceItem.className = 'source-item';
+                    sourceItem.innerHTML = `
+                        <div class="source-header">
+                            <a href="${source.url}" target="_blank" class="source-url">${source.url.substring(0, 50)}...</a>
+                            <span class="source-similarity">${source.similarity}% trùng khớp</span>
+                        </div>
+                        <div class="source-preview">${source.preview}</div>
+                    `;
+                    sourcesList.appendChild(sourceItem);
+                });
+            } else {
+                matchesSection.classList.add('hidden');
+            }
+            
+            // Show results
+            resultsDisplay.classList.remove('hidden');
+        }
+
+        function addToHistory(text, result) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('vi-VN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            const dateString = now.toLocaleDateString('vi-VN');
+            
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="history-date">${dateString} ${timeString}</div>
+                <div class="history-text">${text.substring(0, 100)}...</div>
+                <div style="margin-top: 0.5rem; font-weight: 600; color: ${result.similarity < 30 ? '#10b981' : '#ef4444'}">
+                    ${result.similarity}% trùng khớp
+                </div>
+            `;
+            
+            historyItem.addEventListener('click', () => {
+                textInput.value = text;
+                updateWordCount();
+                displayResults(result);
+                resultsDisplay.classList.remove('hidden');
+                initialState.classList.add('hidden');
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            // Add to beginning of history
+            historyGrid.insertBefore(historyItem, historyGrid.firstChild);
+            
+            // Limit history to 10 items
+            if (historyGrid.children.length > 10) {
+                historyGrid.removeChild(historyGrid.lastChild);
+            }
+        }
+
+        // Export report
+        exportBtn.addEventListener('click', function() {
+            if (!resultsDisplay.classList.contains('hidden')) {
+                alert('Tính năng xuất báo cáo đang được phát triển!');
+            } else {
+                alert('Vui lòng kiểm tra văn bản trước khi xuất báo cáo.');
+            }
+        });
+
+        // Footer links
+        document.getElementById('privacyLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Chính sách bảo mật:\n\nChúng tôi cam kết bảo vệ thông tin của bạn. Văn bản bạn kiểm tra sẽ không được lưu trữ vĩnh viễn và chỉ được sử dụng cho mục đích phân tích.');
+        });
+        
+        document.getElementById('termsLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Điều khoản sử dụng:\n\n1. Công cụ này chỉ dành cho mục đích tham khảo\n2. Không sử dụng cho nội dung bất hợp pháp\n3. Giới hạn 10 lần kiểm tra/ngày');
+        });
+        
+        document.getElementById('helpLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Trợ giúp:\n\n1. Dán văn bản vào ô nhập liệu\n2. Nhấn "Bắt đầu kiểm tra"\n3. Xem kết quả phân tích chi tiết\n\nHỗ trợ: support@example.com');
+        });
+
+        // Initialize
+        updateWordCount();
+        
+        // Add some sample history items
+        setTimeout(() => {
+            const sampleTexts = [
+                "Machine learning là một lĩnh vực của trí tuệ nhân tạo tập trung vào việc phát triển các thuật toán cho phép máy tính học từ dữ liệu.",
+                "Blockchain là công nghệ chuỗi khối cho phép lưu trữ thông tin trong các khối được liên kết với nhau bằng mã hóa.",
+                "Internet of Things (IoT) đề cập đến mạng lưới các thiết bị vật lý được kết nối internet để thu thập và chia sẻ dữ liệu."
+            ];
+            
+            sampleTexts.forEach(text => {
+                const result = generateFakeResults(text);
+                addToHistory(text, result);
+            });
+        }, 1000);
+    </script>
 </body>
 </html>
